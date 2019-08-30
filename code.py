@@ -1,0 +1,160 @@
+# --------------
+#Importing header files
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+#Path of the file
+path
+data = pd.read_csv(path)
+
+data.rename(columns = {"Total": "Total_Medals"}, inplace = True)
+
+print(data.head(10))
+
+#Code starts here
+
+
+
+# --------------
+#Code starts here
+
+data['Better_Event'] = np.where(data['Total_Summer'] > data['Total_Winter'], 'Summer', np.where(
+data['Total_Winter'] > data['Total_Summer'], 'Winter', 'Both'))
+
+better_event = data['Better_Event'].value_counts().head(1).index[0]
+print(better_event)
+
+
+# --------------
+#Code starts here
+top_countries = pd.DataFrame(data[['Country_Name', 'Total_Summer', 'Total_Winter', 'Total_Medals']])
+
+top_countries.drop(top_countries.index[-1], inplace = True)
+
+def top_ten(top_countries, col_name):
+    country_list = []
+    top_10_countries = top_countries.nlargest(10, col_name)
+    country_name = list(top_10_countries.loc[:, 'Country_Name'].values)
+    for i in country_name:
+        country_list.append(i)
+    return country_list
+
+top_10_summer = top_ten(top_countries, 'Total_Summer')
+top_10_winter = top_ten(top_countries, 'Total_Winter')
+top_10 = top_ten(top_countries, 'Total_Medals')
+
+print(top_10_summer)
+print(top_10_winter)
+print(top_10)
+
+common = []
+
+for i in top_10_summer:
+    if i in top_10_winter and i in top_10:
+        common.append(i)
+
+print(common)
+
+
+
+
+
+
+
+
+
+
+
+
+
+# --------------
+#Code starts here
+summer_df = data[data['Country_Name'].isin(top_10_summer)]
+winter_df = data[data['Country_Name'].isin(top_10_winter)]
+top_df = data[data['Country_Name'].isin(top_10)]
+
+summer_df.plot(x = 'Country_Name', y = 'Total_Summer', kind = 'bar', color = 'red')
+plt.xlabel('Country Name')
+plt.ylabel('Total Summer Medals Won')
+plt.title('Top 10 Countries by Summer Medals Won')
+
+winter_df.plot(x = 'Country_Name', y = 'Total_Winter', kind = 'bar', color = 'blue')
+plt.xlabel('Country Name')
+plt.ylabel('Total Winter Medals Won')
+plt.title('Top 10 Countries by Winter Medals Won')
+
+top_df.plot(x = 'Country_Name', y = 'Total_Medals', kind = 'bar', color = 'green')
+plt.xlabel('Country Name')
+plt.ylabel('Total Medals Won')
+plt.title('Top 10 Countries by Total Medals Won')
+
+
+
+
+
+
+# --------------
+#Code starts here
+summer_df['Golden_Ratio'] = round(summer_df['Gold_Summer']/summer_df['Total_Summer'],2)
+summer_max_ratio = summer_df['Golden_Ratio'].max()
+summer_df = summer_df.sort_values(['Golden_Ratio'], ascending = False)
+summer_country_gold = summer_df['Country_Name'].head(1).values[0]
+print("The max ratio of gold to total medals in summer is {}.".format(summer_max_ratio))
+print("The country with the max gold ratio in summer is {}.".format(summer_country_gold))
+
+winter_df['Golden_Ratio'] = winter_df['Gold_Winter']/winter_df['Total_Winter']
+winter_max_ratio = winter_df['Golden_Ratio'].max()
+winter_df = winter_df.sort_values(['Golden_Ratio'], ascending = False)
+winter_country_gold = winter_df['Country_Name'].head(1).values[0]
+print("The max ratio of gold to total medals in winter is {}.".format(winter_max_ratio))
+print("The country with the max gold ratio in winter is {}.".format(winter_country_gold))
+
+top_df['Golden_Ratio'] = round(top_df['Gold_Total']/top_df['Total_Medals'],2)
+top_max_ratio = top_df['Golden_Ratio'].max()
+top_df = top_df.sort_values(['Golden_Ratio'], ascending = False)
+top_country_gold = top_df['Country_Name'].head(1).values[0]
+print("The max ratio of gold to total medals in total is {}.".format(top_max_ratio))
+print("The country with the max gold ratio in total is {}.".format(top_country_gold))
+
+
+
+
+
+
+# --------------
+#Code starts here
+
+
+#Removing the last column of the dataframe
+data_1=data[:-1]
+
+#Creating a new column 'Total_Points'
+data_1['Total_Points']= data_1['Gold_Total']*3 + data_1['Silver_Total']*2 + data_1['Bronze_Total']*1  # Use of position index to handle the ambiguity of having same name columns
+
+
+#Finding the maximum value of 'Total_Points' column
+most_points=max(data_1['Total_Points'])
+
+#Finding the country assosciated with the max value of 'Total_Column' column
+best_country=data_1.loc[data_1['Total_Points'].idxmax(),'Country_Name']
+print('The maximum points achieved is ', most_points, ' by ', best_country )
+
+#Code ends here
+
+
+# --------------
+#Code starts here
+best = data_1[data_1['Country_Name'] == best_country]
+
+best = best[['Gold_Total', 'Silver_Total', 'Bronze_Total']]
+
+best.plot(kind= 'bar', stacked = True, figsize = (14,10))
+plt.xlabel('United States')
+plt.ylabel('Medals Tally')
+plt.xticks(rotation =45)
+
+
+plt.title('Total Medals won by United States by Type')
+
+
